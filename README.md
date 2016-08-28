@@ -1,2 +1,2 @@
 # BF
-An implementation of Brainf*** esoteric programming language.
+An implementation of an esoteric programming language called Brainf***.

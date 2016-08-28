@@ -1,11 +1,10 @@
 /* 
- * BrainF language implementation
+ * BF(Brainf***) language implementation
  * Started on: Sat Jul  3 EDT 2016
  * Tested to work on: Sun Jul  3 22:27:25 EDT 2016
  * Used non-recursive(iterative) approach for finding, jumping to matching braces
  * operators: + - .  , > < [ ]
  */
-
 /*
  * Sun Aug 14 19:11:55 EDT 2016
  * fixed return code from main to use return code of process_code()
@@ -16,7 +15,7 @@
 #include <fcntl.h>
 
 #define MAX_CODE_LEN (10000)
-#define MAX_DATA_LEN (30000) // original bf had this size ?...
+#define MAX_DATA_LEN (30000) // original BF had this size ?...
 static char code[MAX_CODE_LEN];
 static char data[MAX_DATA_LEN];
 
