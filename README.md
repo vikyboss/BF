@@ -2,7 +2,11 @@
 An implementation of an esoteric programming language called Brainf***
 
 # Example
-An example test code from language wikipedia page used here for testing:
+An example test code for printing "Hello World!" from the language wikipedia page is used here for testing:
 ```
-$ echo "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++." | ./BF /dev/stdin
+$ ./BF /dev/stdin <<EOF
+++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.
+>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
+EOF
+Hello World!
 ```
