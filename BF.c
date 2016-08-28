@@ -30,48 +30,61 @@ int process_code(int code_len)
     int depth;
     int r;
 
-    for (int c = 0 /* code index */, d = 0 /* data index */
+    for (int c = 0 /* code pointer */, d = 0 /* data pointer */
             ; c < code_len
             ; ++c) {
         switch (code[c]) {
+            /* increment the data byte by one */
             case '+':
                 data[d] += 1;
                 break;
+
+            /* decrement the data byte by one */
             case '-':
                 data[d] -= 1;
                 break;
+
+            /* print the data byte */
             case '.':
                 if (write(STDOUT_FILENO, &data[d], 1) != 1) {
                     perror("write");
                     return 1;
                 }
                 break;
+
+            /* read one byte of input and store it in the data byte */
             case ',':
                 if ((r = read(STDIN_FILENO, &tmp, 1)) != 1) {
                     perror("read");
-                    fprintf(stderr, "read only %d bytes\n", r);
+                    fprintf(stderr, "Error: read only %d bytes\n", r);
                     return 1;
                 }
                 data[d] = tmp;
                 break;
+
+            /* increment the data pointer by one */
             case '>':
                 if ( !(++d < MAX_DATA_LEN) ) {
-                    fprintf(stderr, "data pointer reached the the right limit of data segment\n");
+                    fprintf(stderr, "Error: data pointer reached the the right limit of data segment\n");
                     return 1;
                 }
                 break;
+
+            /* decrement the data pointer by one */
             case '<':
                 if ( !(--d > -1) ) {
-                    fprintf(stderr, "data pointer reached the the left limit of data segment\n");
+                    fprintf(stderr, "Error: data pointer reached the the left limit of data segment\n");
                     return 1;
                 }
                 break;
+
+            /* if the data byte is zero, jump forward the code pointer to one byte after the matching bracket ']' */
             case '[':
-                if (data[d] == 0) { // go to the matching ']'
+                if (data[d] == 0) {
                     depth = 0;
-                    for (;;) {
+                    for (;;) { // move the code pointer to the matching ']'
                         if ( !(++c < code_len) ) {
-                            fprintf(stderr, "code pointer reached the the right limit of code segment\n");
+                            fprintf(stderr, "Error: code pointer reached the the right limit of code segment\n");
                             return 1;
                         }
                         if ( !(code[c] == ']' && depth == 0) ) {
@@ -83,12 +96,14 @@ int process_code(int code_len)
                     }
                 }
                 break;
+
+            /* If the data byte is nonzero, jump backwards the code pointer to one byte after the matching bracket '[' */
             case ']': 
-                {
+                if (data[d] != 0) {
                     depth = 0;
-                    for (;;) { // go to the matching '['
+                    for (;;) { // move the code pointer to the matching '['
                         if ( !(--c > -1) ) {
-                            fprintf(stderr, "code pointer reached the the left limit of code segment\n");
+                            fprintf(stderr, "Error: code pointer reached the the left limit of code segment\n");
                             return 1;
                         }
                         if ( !(code[c] == '[' && depth == 0) ) {
@@ -96,16 +111,18 @@ int process_code(int code_len)
                             if (code[c] == '[') --depth;
                             continue;
                         }
-                        --c;  // need to point to one above the starter
                         break;
                     }
                 }
                 break;
+
+            /* ignore the new line character */
             case '\n':
-                // ignore
                 break;
+
+            /* handle unknown input */
             default:
-                fprintf(stderr, "Syntax error: unknown character '%c'\n", code[c]);
+                fprintf(stderr, "Error: unknown character '%c'\n", code[c]);
                 return 1;
         }
     }
@@ -114,22 +131,28 @@ int process_code(int code_len)
 
 int main(int argc, char **argv)
 {
-    int fd, code_len;
+    int code_len;
 
     if (argc != 1+1) {
         fprintf(stderr, "Usage: %s code_file\n", argv[0]);
         return 1;
     }
 
-    if ((fd = open(argv[1], O_RDONLY)) == -1) {
-        perror("open");
-        return 1;
+    /* read the input file into memory */ {
+        int fd;
+
+        if ((fd = open(argv[1], O_RDONLY)) == -1) {
+            perror("open");
+            return 1;
+        }
+
+        if ((code_len = read(fd, code, MAX_CODE_LEN)) == -1) {
+            perror("read");
+            return 1;
+        }
+
+        close(fd);
     }
-    if ((code_len = read(fd, code, MAX_CODE_LEN)) == -1) {
-        perror("read");
-        return 1;
-    }
-    close(fd);
 
     return process_code(code_len);
 }
